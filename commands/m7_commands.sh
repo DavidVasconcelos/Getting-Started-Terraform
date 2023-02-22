@@ -11,7 +11,12 @@ cidrsubnet(var.vpc_cidr_block, 8, 0)
 cidrhost(cidrsubnet(var.vpc_cidr_block, 8, 0),5)
 lookup(local.common_tags, "company", "Unknown")
 lookup(local.common_tags, "missing", "Unknown")
-local.common_tags
+local.common_tags["company"]
+0 % 2
+1 % 2
+2 % 2
+merge(local.common_tags, { Name = "${local.name_prefix}-vpc"})
+
 
 # Update the configuration by adding count and for_each loops and
 # adding functions where helpful.

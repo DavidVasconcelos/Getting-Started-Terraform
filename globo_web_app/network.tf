@@ -1,17 +1,4 @@
 ##################################################################################
-# DATA
-##################################################################################
-
-data "aws_ssm_parameter" "ami" {
-  name = "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2"
-}
-
-data "aws_availability_zones" "available" {
-  state = "available"
-}
-
-
-##################################################################################
 # RESOURCES
 ##################################################################################
 
@@ -20,31 +7,29 @@ resource "aws_vpc" "vpc" {
   cidr_block           = var.vpc_cidr_block
   enable_dns_hostnames = var.enable_dns_hostnames
 
-  tags = local.common_tags
+  tags = merge(local.common_tags, {
+    Name = "${local.name_prefix}-vpc"
+  })
 }
 
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.vpc.id
 
-  tags = local.common_tags
+  tags = merge(local.common_tags, {
+    Name = "${local.name_prefix}-igw"
+  })
 }
 
-resource "aws_subnet" "subnet1" {
-  cidr_block              = var.vpc_subnets_cidr_block[0]
+resource "aws_subnet" "subnets" {
+  count                   = var.vpc_subnet_count
+  cidr_block              = cidrsubnet(var.vpc_cidr_block, 8, count.index)
   vpc_id                  = aws_vpc.vpc.id
   map_public_ip_on_launch = var.map_public_ip_on_launch
-  availability_zone       = data.aws_availability_zones.available.names[0]
+  availability_zone       = data.aws_availability_zones.available.names[count.index]
 
-  tags = local.common_tags
-}
-
-resource "aws_subnet" "subnet2" {
-  cidr_block              = var.vpc_subnets_cidr_block[1]
-  vpc_id                  = aws_vpc.vpc.id
-  map_public_ip_on_launch = var.map_public_ip_on_launch
-  availability_zone       = data.aws_availability_zones.available.names[1]
-
-  tags = local.common_tags
+  tags = merge(local.common_tags, {
+    Name = "${local.name_prefix}-subnet-${count.index}"
+  })
 }
 
 # ROUTING #
@@ -56,16 +41,14 @@ resource "aws_route_table" "rtb" {
     gateway_id = aws_internet_gateway.igw.id
   }
 
-  tags = local.common_tags
+  tags = merge(local.common_tags, {
+    Name = "${local.name_prefix}-rtb"
+  })
 }
 
-resource "aws_route_table_association" "rta-subnet1" {
-  subnet_id      = aws_subnet.subnet1.id
-  route_table_id = aws_route_table.rtb.id
-}
-
-resource "aws_route_table_association" "rta-subnet2" {
-  subnet_id      = aws_subnet.subnet2.id
+resource "aws_route_table_association" "rta-subnets" {
+  count          = var.vpc_subnet_count
+  subnet_id      = aws_subnet.subnets[count.index].id
   route_table_id = aws_route_table.rtb.id
 }
 
@@ -91,7 +74,9 @@ resource "aws_security_group" "nginx-sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = local.common_tags
+  tags = merge(local.common_tags, {
+    Name = "${local.name_prefix}-nginx-sg"
+  })
 }
 
 resource "aws_security_group" "alb_sg" {
@@ -114,6 +99,8 @@ resource "aws_security_group" "alb_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = local.common_tags
+  tags = merge(local.common_tags, {
+    Name = "${local.name_prefix}-alb_sg"
+  })
 }
 

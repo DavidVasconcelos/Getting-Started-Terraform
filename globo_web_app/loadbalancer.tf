@@ -9,13 +9,13 @@ data "aws_elb_service_account" "root" {}
 ##################################################################################
 
 resource "aws_lb" "nginx" {
-  name               = "globo-web-alb"
+  name               = "${local.name_prefix}-alb"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb_sg.id]
-  subnets            = [aws_subnet.subnet1.id, aws_subnet.subnet2.id]
+  subnets            = aws_subnet.subnets[*].id
 
-  enable_deletion_protection = true
+  enable_deletion_protection = false
 
   access_logs {
     bucket  = aws_s3_bucket.web_bucket.bucket
@@ -48,17 +48,9 @@ resource "aws_lb_listener" "nginx" {
   tags = local.common_tags
 }
 
-resource "aws_lb_target_group_attachment" "nginx1" {
+resource "aws_lb_target_group_attachment" "nginx" {
+  count            = var.instance_count
   target_group_arn = aws_lb_target_group.nginx.arn
-  target_id        = aws_instance.nginx1.id
+  target_id        = aws_instance.nginx[count.index].id
   port             = 80
 }
-
-resource "aws_lb_target_group_attachment" "nginx2" {
-  target_group_arn = aws_lb_target_group.nginx.arn
-  target_id        = aws_instance.nginx2.id
-  port             = 80
-}
-
-
-

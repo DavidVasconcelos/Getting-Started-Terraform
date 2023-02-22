@@ -1,3 +1,27 @@
+variable "naming_prefix" {
+  type        = string
+  description = "Naming prefix for resources"
+  default     = "globoweb"
+}
+
+variable "company" {
+  type        = string
+  description = "Company name for resource tagging"
+  default     = "Globomantics"
+}
+
+variable "project" {
+  type        = string
+  description = "Project name for resource tagging"
+  default     = "web-app"
+}
+
+variable "billing_code" {
+  type        = string
+  description = "Billing code for resource tagging"
+  default     = "ACCT8675309"
+}
+
 variable "aws_region" {
   type        = string
   description = "Region for AWS Resources"
@@ -22,6 +46,12 @@ variable "vpc_subnets_cidr_block" {
   default     = ["10.0.0.0/24", "10.0.1.0/24"]
 }
 
+variable "vpc_subnet_count" {
+  type        = number
+  description = "Number of VPC Subnets to create"
+  default     = 2
+}
+
 variable "map_public_ip_on_launch" {
   type        = bool
   description = "Map a public IP address for Subnet instances"
@@ -34,18 +64,8 @@ variable "instance_type" {
   default     = "t2.micro"
 }
 
-variable "company" {
-  type        = string
-  description = "Company name for resource tagging"
-  default     = "Globomantics"
-}
-
-variable "project" {
-  type        = string
-  description = "Project name for resource tagging"
-}
-
-variable "billing_code" {
-  type        = string
-  description = "Billing code for resource tagging"
+variable "instance_count" {
+  type        = number
+  description = "Number of Instances to create"
+  default     = 2
 }
