@@ -1,7 +1,11 @@
 # Terraform workspaces enable you to deploy multiple instances of a configuration
-# using the same base code with different values for the config. The result is 
-# separate state files for each workspace. We are going to make use of the 
+# using the same base code with different values for the config. The result is
+# separate state files for each workspace. We are going to make use of the
 # terraform.workspace value for naming and dynamic configuration values.
+
+# Testing
+terraform console
+terraform.workspace
 
 # Prepare config
 terraform fmt
@@ -26,7 +30,7 @@ terraform workspace list
 terraform plan -out m9uat.tfplan
 terraform apply m9uat.tfplan
 
-# Don't forget to tear everything down when you're done! You'll have to run 
+# Don't forget to tear everything down when you're done! You'll have to run
 # terraform destroy for each workspace
 terraform workspace select Development
 terraform destroy -auto-approve
